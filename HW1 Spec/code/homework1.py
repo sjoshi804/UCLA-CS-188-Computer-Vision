@@ -1,5 +1,7 @@
 from classifiers import *
-
+import cv2
+import os
+import numpy
 # interpreting your performance with 100 training examples per category:
 # accuracy  =   0 ->  your code is broken (probably not the classifier's
 #                     fault! a classifier would have to be amazing to
@@ -31,6 +33,30 @@ from classifiers import *
 #                     realistic number. some accuracy calculation is broken
 #                     or your classifier is cheating and seeing the test
 #                     labels.
-
+TRAINING_DATA = "/Users/sjoshi/Documents/Classes/CS 188 - Computer Vision/HW1 Spec/data/train"
+TESTING_DATA = "/Users/sjoshi/Documents/Classes/CS 188 - Computer Vision/HW1 Spec/data/test"
+def read_data(path):
+    images = []
+    labels = []
+    for dir in os.listdir(path):
+        if dir == ".DS_Store":
+            continue
+        for file_name in os.listdir(path + "/" + dir):
+            images.append(cv2.imread(path + "/" + dir + "/" + file_name, cv2.IMREAD_GRAYSCALE))
+            labels.append(dir)
+    return images, labels
 
 if __name__ == "__main__":
+    #Read and label images
+    training_images, training_labels = read_data(TRAINING_DATA)
+    testing_images, testing_labels = read_data(TESTING_DATA)
+
+    #Resize and flatten images
+    for i in range(0, len(training_images)):
+        training_images[i] = numpy.ndarray.flatten(imresize(training_images[i], 16))
+    for j in range(0, len(testing_images)):
+        testing_images[j] = numpy.ndarray.flatten(imresize(testing_images[j], 16))
+
+    predicted_labels = KNN_classifier(training_images, training_labels, testing_images, 3)
+    acc = reportAccuracy(testing_labels, predicted_labels, None)
+    print(acc)
