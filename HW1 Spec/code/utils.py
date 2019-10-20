@@ -48,7 +48,7 @@ def KNN_classifier(train_features, train_labels, test_features, num_neighbors):
     predicted_categories = knn_classifier.predict(test_features)
     return predicted_categories
 
-def SVM_classifier(train_features, train_labels, test_features, is_linear, svm_lambda):
+#def SVM_classifier(train_features, train_labels, test_features, is_linear, svm_lambda):
     # this function will train a linear svm for every category (i.e. one vs all)
     # and then use the learned linear classifiers to predict the category of
     # every test image. every test feature will be evaluated with all 15 svms
@@ -68,18 +68,16 @@ def SVM_classifier(train_features, train_labels, test_features, is_linear, svm_l
 
     # predicted_categories is an M x 1 array, where each entry is an integer
     # indicating the predicted category for each test feature.
-    return predicted_categories
+    #return predicted_categories
 
 
 def imresize(input_image, target_size):
-    # resizes the input image, represented as a 2D array, to a new image of size [target_size, target_size]. 
-    # Normalizes the output image to be zero-mean, and in the [-1, 1] range.
-    input_image = np.asarray(input_image)
     dimension = (target_size, target_size)
     resized_image = cv2.resize(input_image, dimension)
-    output_image = np.zeros(dimension)
+    output_image = resized_image
     output_image = cv2.normalize(resized_image, output_image, -1, 1, cv2.NORM_MINMAX, cv2.CV_32F)
     return output_image
+
 
 
 def reportAccuracy(true_labels, predicted_labels):
@@ -100,7 +98,7 @@ def reportAccuracy(true_labels, predicted_labels):
     return accuracy
 
 
-def buildDict(train_images, dict_size, feature_type, clustering_type):
+#def buildDict(train_images, dict_size, feature_type, clustering_type):
     # this function will sample descriptors from the training images,
     # cluster them, and then return the cluster centers.
 
@@ -115,10 +113,10 @@ def buildDict(train_images, dict_size, feature_type, clustering_type):
 
     # NOTE: Should you run out of memory or have performance issues, feel free to limit the 
     # number of descriptors you store per image.
-    return vocabulary
+    #return vocabulary
 
 
-def computeBow(image, vocabulary, feature_type):
+#def computeBow(image, vocabulary, feature_type):
     # extracts features from the image, and returns a BOW representation using a vocabulary
 
     # image is 2D array
@@ -127,7 +125,7 @@ def computeBow(image, vocabulary, feature_type):
     # used to create the vocabulary
 
     # BOW is the new image representation, a normalized histogram
-    return Bow
+    #return Bow
 
 
 def tinyImages(train_features, test_features, train_labels, test_labels):
@@ -147,14 +145,19 @@ def tinyImages(train_features, test_features, train_labels, test_labels):
     # 8x8 scale 3 neighbor runtime, ...]
     # Accuracies are a percentage, runtimes are in seconds
     #For different sizes of images
+    results = []
     for size in (8,16,32):
-        #Resize images
+        #Resize images      
         for i in range(0, len(train_features)):
             train_features[i] = np.ndarray.flatten(imresize(train_features[i], size))
+        for i in range(0, len(test_features)):
+            test_features[i] = np.ndarray.flatten(imresize(test_features[i], size))
         #Run classifier with different numbers of neighbours
         for num_neighbours in (1,3,6):
             start = time.time()
-            print(reportAccuracy(KNN_classifier(train_features, train_labels, test_features, num_neighbours),test_labels))
+            accuracy = reportAccuracy(KNN_classifier(train_features, train_labels, test_features, num_neighbours),test_labels)
             end = time.time()
-            print(start-end)
+            run_time = end - start
+        results += [accuracy, run_time]
+    return results
     
