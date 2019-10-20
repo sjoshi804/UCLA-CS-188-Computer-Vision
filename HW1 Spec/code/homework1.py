@@ -1,62 +1,116 @@
-from classifiers import *
-import cv2
-import os
-import numpy
-# interpreting your performance with 100 training examples per category:
-# accuracy  =   0 ->  your code is broken (probably not the classifier's
-#                     fault! a classifier would have to be amazing to
-#                     perform this badly).
-#  accuracy ~= .07 -> your performance is chance.
-#  accuracy ~= .20 -> rough performance with tiny images and nearest
-#                     neighbor classifier.
-#  accuracy ~= .20 -> rough performance with tiny images and linear svm
-#                     classifier. the linear classifiers will have a lot of
-#                     trouble trying to separate the classes and may be
-#                     unstable (e.g. everything classified to one category)
-#  accuracy ~= .50 -> rough performance with bag of sift and nearest
-#                     neighbor classifier.
-#  accuracy ~= .60 -> you've gotten things roughly correct with bag of
-#                     sift and a linear svm classifier.
-#  accuracy >= .70 -> you've also tuned your parameters well. e.g. number
-#                     of clusters, svm regularization, number of patches
-#                     sampled when building vocabulary, size and step for
-#                     dense sift features.
-#  accuracy >= .80 -> you've added in spatial information somehow or you've
-#                     added additional, complementary image features. this
-#                     represents state of the art in lazebnik et al 2006.
-#  accuracy >= .85 -> you've done extremely well. this is the state of the
-#                     art in the 2010 sun database paper from fusing many 
-#                     features. don't trust this number unless you actually
-#                     measure many random splits.
-#  accuracy >= .90 -> you get to teach the class next year.
-#  accuracy >= .96 -> you can beat a human at this task. this isn't a
-#                     realistic number. some accuracy calculation is broken
-#                     or your classifier is cheating and seeing the test
-#                     labels.
-TRAINING_DATA = "/Users/sjoshi/Documents/Classes/CS 188 - Computer Vision/HW1 Spec/data/train"
-TESTING_DATA = "/Users/sjoshi/Documents/Classes/CS 188 - Computer Vision/HW1 Spec/data/test"
-def read_data(path):
-    images = []
-    labels = []
-    for dir in os.listdir(path):
-        if dir == ".DS_Store":
-            continue
-        for file_name in os.listdir(path + "/" + dir):
-            images.append(cv2.imread(path + "/" + dir + "/" + file_name, cv2.IMREAD_GRAYSCALE))
-            labels.append(dir)
-    return images, labels
+from utils import *
+import argparse
+
+parser = argparse.ArgumentParser(description='CS188.2 - Fall 19 - Homework 1')
+parser.add_argument("--tiny", "-t", type=bool, default=True, help='run Tiny Images')
+parser.add_argument("--create-path", "-cp", type=bool, default=True, help='create the Results directory')
+args = parser.parse_args()
+
+# The argument is included as an idea for debugging, with a few examples in the main. Feel free to modify it or add arguments.
+# You are also welcome to disregard this entirely
+
+#############################################################################################################################
+# This file contains the main. All the functions you need to write are included in utils. You also need to edit the main.
+# The main just gets you started with the data and highlights the high level structure of the project.
+# You are free to modify it as you wish - the modifications you are required to make have been marked but you are free to make
+# others.
+# What you cannot modify is the number of files you have to save or their names. All the save calls are done for you, you
+# just need to specify the right data.
+#############################################################################################################################
+
 
 if __name__ == "__main__":
-    #Read and label images
-    training_images, training_labels = read_data(TRAINING_DATA)
-    testing_images, testing_labels = read_data(TESTING_DATA)
+    
+    if args.create_path:
+        # To save accuracies, runtimes, voabularies, ...
+        if not os.path.exists('Results'):
+            os.mkdir('Results') 
+        SAVEPATH = 'Results/'
+    
+    # Load data, the function is written for you in utils
+    train_images, test_images, train_labels, test_labels = load_data()
+    
+    if args.tiny:
+        # You have to write the tinyImages function
+        tinyRes = tinyImages(train_images, test_images, train_labels, test_labels)
+    
+        # Split accuracies and runtimes for saving  
+        for element in tinyRes[::2]:
+            # Check that every second element is an accuracy in reasonable bounds
+            assert (7 < element and element < 20)
+        acc = np.asarray(tinyRes[::2])
+        runtime = np.asarray(tinyRes[1::2])
+    
+        # Save results
+        np.save(SAVEPATH + 'tiny_acc.npy', acc)
+        np.save(SAVEPATH + 'tiny_time.npy', runtime)
 
-    #Resize and flatten images
-    for i in range(0, len(training_images)):
-        training_images[i] = numpy.ndarray.flatten(imresize(training_images[i], 16))
-    for j in range(0, len(testing_images)):
-        testing_images[j] = numpy.ndarray.flatten(imresize(testing_images[j], 16))
+    # Create vocabularies, and save them in the result directory
+    # You need to write the buildDict function
+    vocabularies = []
+    vocab_idx = [] # If you have doubts on which index is mapped to which vocabulary, this is referenced here
+    # e.g vocab_idx[i] will tell you which algorithms/neighbors were used to compute vocabulary i
+    # This isn't used in the rest of the code so you can feel free to ignore it
 
-    predicted_labels = KNN_classifier(training_images, training_labels, testing_images, 3)
-    acc = reportAccuracy(testing_labels, predicted_labels, None)
-    print(acc)
+    for feature in ['sift', 'surf', 'orb']:
+        for algo in ['kmeans', 'hierarchical']:
+            for dict_size in [20, 50]:
+                vocabulary = buildDict(train_images, dict_size, feature, algo)
+                filename = 'voc_' + feature + '_' + algo + '_' + str(dict_size) + '.npy'
+                np.save(SAVEPATH + filename, np.asarray(vocabulary))
+                vocabularies.append(vocabulary) # A list of vocabularies (which are 2D arrays)
+                vocab_idx.append(filename.split('.')[0]) # Save the map from index to vocabulary
+                
+    # Compute the Bow representation for the training and testing sets
+    test_rep = [] # To store a set of BOW representations for the test images (given a vocabulary)
+    train_rep = [] # To store a set of BOW representations for the train images (given a vocabulary)
+    features = ['sift'] * 4 + ['surf'] * 4 + ['orb'] * 4 # Order in which features were used 
+    # for vocabulary generation
+    
+    # You need to write ComputeBow()
+    for i, vocab in enumerate(vocabularies):
+        for image in train_images: # Compute the BOW representation of the training set
+            rep = computeBow(image, vocab, features[i]) # Rep is a list of descriptors for a given image
+            train_rep.append(rep)
+        np.save(SAVEPATH + 'bow_train_' + str(i) + '.npy', np.asarray(train_rep)) # Save the representations for vocabulary i
+        train_rep = [] # reset the list to save the following vocabulary
+        for image in test_images: # Compute the BOW representation of the testing set
+            rep = computeBow(image, vocab, features[i])
+            test_rep.append(rep)
+        np.save(SAVEPATH + 'bow_test_' + str(i) + '.npy', np.asarray(test_rep)) # Save the representations for vocabulary i
+        train_rep = [] # reset the list to save the following vocabulary
+        
+    
+    # Use BOW features to classify the images with a KNN classifier
+    # A list to store the accuracies and one for runtimes
+    knn_accuracies = []
+    knn_runtimes = []
+
+    # Your code below, eg:
+    # for i, vocab in enumerate(vocabularies):
+    # ... 
+    
+    np.save(SAVEPATH+'knn_accuracies.npy', np.asarray(knn_accuracies)) # Save the accuracies in the Results/ directory
+    np.save(SAVEPATH+'knn_runtimes.npy', np.asarray(knn_runtimes)) # Save the runtimes in the Results/ directory
+    
+    # Use BOW features to classify the images with 15 Linear SVM classifiers
+    lin_accuracies = []
+    lin_runtimes = []
+    
+    # Your code below
+    #...
+
+    np.save(SAVEPATH+'lin_accuracies.npy', np.asarray(lin_accuracies)) # Save the accuracies in the Results/ directory
+    np.save(SAVEPATH+'lin_runtimes.npy', np.asarray(lin_runtimes)) # Save the runtimes in the Results/ directory
+    
+    # Use BOW features to classify the images with 15 Kernel SVM classifiers
+    rbf_accuracies = []
+    rbf_runtimes = []
+    
+    # Your code below
+    # ...
+    
+    np.save(SAVEPATH +'rbf_accuracies.npy', np.asarray(rbf_accuracies)) # Save the accuracies in the Results/ directory
+    np.save(SAVEPATH +'rbf_runtimes.npy', np.asarray(rbf_runtimes)) # Save the runtimes in the Results/ directory
+            
+    
