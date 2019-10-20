@@ -2,7 +2,8 @@ import os
 import cv2
 import numpy as np
 import timeit, time
-from sklearn import neighbors, svm, cluster, preprocessing
+from sklearn import svm, cluster, preprocessing
+from sklearn.neighbors import KNeighborsClassifier
 
 
 def load_data():
@@ -76,7 +77,7 @@ def imresize(input_image, target_size):
     input_image = np.asarray(input_image)
     dimension = (target_size, target_size)
     resized_image = cv2.resize(input_image, dimension)
-    output_image = resized_image
+    output_image = np.zeros(dimension)
     output_image = cv2.normalize(resized_image, output_image, -1, 1, cv2.NORM_MINMAX, cv2.CV_32F)
     return output_image
 
@@ -149,7 +150,7 @@ def tinyImages(train_features, test_features, train_labels, test_labels):
     for size in (8,16,32):
         #Resize images
         for i in range(0, len(train_features)):
-            train_features[i] = imresize(train_features[i], size)
+            train_features[i] = np.ndarray.flatten(imresize(train_features[i], size))
         #Run classifier with different numbers of neighbours
         for num_neighbours in (1,3,6):
             start = time.time()
