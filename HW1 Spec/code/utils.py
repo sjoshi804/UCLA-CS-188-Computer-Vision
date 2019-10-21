@@ -116,18 +116,29 @@ def buildDict(train_images, dict_size, feature_type, clustering_type):
     # number of descriptors you store per image.
 
     #Initialize a SIFT Object, keypoints and descriptors lists
-    sift = cv2.xfeatures2d.SIFT_create()
-    keypoints = []
     descriptors = []
 
-    #Get Keypoints and Descriptors
-    for image in train_images:
-        keypoints.append(sift.detectAndCompute(image, None)[0])
-        descriptors.append(sift.detectAndCompute(image, None)[1])
-    
-    #Cluster kMeans
-    kmeans = KMeans(n_clusters=dict_size, random_state=0).fit(descriptors)
-    return kmeans.cluster_centers_
+    if feature_type == 'sift':
+        sift = cv2.xfeatures2d.SIFT_create()
+        descriptors.append(sift.detectAndCompute(image, None)[0])
+        if clustering_type == 'kmeans':
+            kmeans = KMeans(n_clusters=dict_size, random_state=0).fit(descriptors)
+            return kmeans.cluster_centers_
+        else:
+            hierarchical = []
+
+    elif feature_type == 'surf':
+        if clustering_type == 'kmeans':
+            kmeans = KMeans(n_clusters=dict_size, random_state=0).fit(descriptors)
+            return kmeans.cluster_centers_
+        else:
+            hierarchical = []
+    else:
+        if clustering_type == 'kmeans':
+            kmeans = KMeans(n_clusters=dict_size, random_state=0).fit(descriptors)
+            return kmeans.cluster_centers_
+        else:
+            hierarchical =[]
 
 
 
