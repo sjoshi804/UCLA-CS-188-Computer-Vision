@@ -37,7 +37,7 @@ if __name__ == "__main__":
         # Split accuracies and runtimes for saving  
         for element in tinyRes[::2]:
             # Check that every second element is an accuracy in reasonable bounds
-            assert (7 < element and element < 20)
+            assert (7 < element and element < 21)
         acc = np.asarray(tinyRes[::2])
         runtime = np.asarray(tinyRes[1::2])
     

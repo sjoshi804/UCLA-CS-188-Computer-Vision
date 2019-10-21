@@ -4,6 +4,7 @@ import numpy as np
 import timeit, time
 from sklearn import svm, cluster, preprocessing
 from sklearn.neighbors import KNeighborsClassifier
+from sklearn.cluster import KMeans
 
 
 def load_data():
@@ -98,7 +99,7 @@ def reportAccuracy(true_labels, predicted_labels):
     return accuracy
 
 
-#def buildDict(train_images, dict_size, feature_type, clustering_type):
+def buildDict(train_images, dict_size, feature_type, clustering_type):
     # this function will sample descriptors from the training images,
     # cluster them, and then return the cluster centers.
 
@@ -111,9 +112,24 @@ def reportAccuracy(true_labels, predicted_labels):
     # the output 'vocabulary' should be a list of length dict_size, with elements of size d, where d is the 
     # dimention of the feature. each row is a cluster centroid / visual word.
 
-    # NOTE: Should you run out of memory or have performance issues, feel free to limit the 
+    #NOTE: Should you run out of memory or have performance issues, feel free to limit the 
     # number of descriptors you store per image.
-    #return vocabulary
+
+    #Initialize a SIFT Object, keypoints and descriptors lists
+    sift = cv2.xfeatures2d.SIFT_create()
+    keypoints = []
+    descriptors = []
+
+    #Get Keypoints and Descriptors
+    for image in train_images:
+        keypoints.append(sift.detectAndCompute(image, None)[0])
+        descriptors.append(sift.detectAndCompute(image, None)[1])
+    
+    #Cluster kMeans
+    kmeans = KMeans(n_clusters=dict_size, random_state=0).fit(descriptors)
+    return kmeans.cluster_centers_
+
+
 
 
 #def computeBow(image, vocabulary, feature_type):
