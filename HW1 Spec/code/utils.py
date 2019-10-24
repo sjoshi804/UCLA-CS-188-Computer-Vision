@@ -183,6 +183,7 @@ def tinyImages(train_features, test_features, train_labels, test_labels):
     results = []
     formatted_train_features = copy.deepcopy(train_features)
     formatted_test_features = copy.deepcopy(test_features)
+    #TODO: Time the resizing?
     for size in (8,16,32):
         #Resize images      
         for i in range(0, len(train_features)):
