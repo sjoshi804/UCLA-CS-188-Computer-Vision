@@ -6,6 +6,7 @@ from sklearn import svm, cluster, preprocessing
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.cluster import KMeans, AgglomerativeClustering
 import copy
+from scipy.spatial import distance
 
 
 def load_data():
@@ -151,16 +152,34 @@ def buildDict(train_images, dict_size, feature_type, clustering_type):
 
 
 
-#def computeBow(image, vocabulary, feature_type):
+def computeBow(image, vocabulary, feature_type):
     # extracts features from the image, and returns a BOW representation using a vocabulary
 
     # image is 2D array
     # vocabulary is an array of size dict_size x d
     # feature type is a string (from "sift", "surf", "orb") specifying the feature
     # used to create the vocabulary
+    #Construct appropriate model object based on chosen feature detector
+    if feature_type == "sift":
+        sift = cv2.xfeatures2d.SIFT_create()
+        descriptors = sift.detectAndCompute(image, None)[1]
+    elif feature_type == "surf":
+        surf = cv2.xfeatures2d.SURF_create()
+        descriptors = surf.detectAndCompute(image, None)[1]
+    else:
+        orb = cv2.ORB_create()
+        descriptors = orb.detectAndCompute(image, None)[1]
 
     # BOW is the new image representation, a normalized histogram
+    Bow = [0] * len(vocabulary)
+    for d in descriptors:
+        dists = [np.Inf] * len(vocabulary)
+        for i in range(0,len(vocabulary)):
+            dists[i] = [ distance.cdist(d, vocabulary[i]) ]
+        Bow[np.argmin(np.asarray(dists))] += 1
+    
     #return Bow
+    return Bow
 
 
 def tinyImages(train_features, test_features, train_labels, test_labels):
