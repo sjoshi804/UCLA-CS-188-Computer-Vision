@@ -122,10 +122,9 @@ def buildDict(train_images, dict_size, feature_type, clustering_type):
         des = sift.detectAndCompute(image, None)[1]
         print(len(des))
         print((len(des[0])))
-        for x in des:
-            descriptors.append(x)
-    
-    
+        for i in range(0, 10):
+            descriptors.append(des[i])
+      
     kmeans = KMeans(n_clusters=dict_size, random_state=0).fit(descriptors)
     return kmeans.cluster_centers_
 
