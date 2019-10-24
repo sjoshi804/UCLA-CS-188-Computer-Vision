@@ -116,12 +116,14 @@ def buildDict(train_images, dict_size, feature_type, clustering_type):
     # number of descriptors you store per image.
 
     #Initialize a SIFT Object, keypoints and descriptors lists
-    keypoints = descriptors = []
+    descriptors = []
     sift = cv2.xfeatures2d.SIFT_create()
     for image in train_images:
-        kp, des = sift.detectAndCompute(image, None)
-        keypoints += [kp]
-        descriptors += [des]
+        des = sift.detectAndCompute(image, None)[0]
+        for x in des:
+            descriptors.append(x)
+    
+    
     kmeans = KMeans(n_clusters=dict_size, random_state=0).fit(descriptors)
     return kmeans.cluster_centers_
 
