@@ -87,8 +87,10 @@ if __name__ == "__main__":
     knn_runtimes = []
 
     # Your code below, eg:
-    # for i, vocab in enumerate(vocabularies):
-    # ... 
+    for i, vocab in enumerate(vocabularies):
+        for k in [1, 3, 6]:
+            KNN_classifier(train_rep, train_labels, test_rep, k)
+
     
     np.save(SAVEPATH+'knn_accuracies.npy', np.asarray(knn_accuracies)) # Save the accuracies in the Results/ directory
     np.save(SAVEPATH+'knn_runtimes.npy', np.asarray(knn_runtimes)) # Save the runtimes in the Results/ directory

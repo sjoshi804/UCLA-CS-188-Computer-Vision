@@ -129,6 +129,7 @@ def buildDict(train_images, dict_size, feature_type, clustering_type):
         orb = cv2.ORB_create()
 
     #Detect descriptors using chosen method
+    num = 0 #TODO: DEBUG
     for image in train_images:
         if feature_type == "sift":
             des = sift.detectAndCompute(image, None)[1]
@@ -138,8 +139,13 @@ def buildDict(train_images, dict_size, feature_type, clustering_type):
             des = orb.detectAndCompute(image, None)[1]
 
         #Flatten by appending elements of des directly to descriptors
-        for element in des:
-            descriptors.append(element)
+        #for element in des: #TODO: UNCOMMENT
+        for index in range(0, 10):
+            descriptors.append(des[index])
+
+        num += 1 #TODO: DEBUG
+        if num == 10:
+            break
 
     
     #Cluster according to chosen clustering method
