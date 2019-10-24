@@ -161,14 +161,14 @@ def tinyImages(train_features, test_features, train_labels, test_labels):
     # Accuracies are a percentage, runtimes are in seconds
     #For different sizes of images
     results = []
-    formatted_train_features = train_features.deepcopy()
-    formatted_test_features = test_features.deepcopy()
+    formatted_train_features = []
+    formatted_test_features = []
     for size in (8,16,32):
         #Resize images      
         for i in range(0, len(train_features)):
-            formatted_train_features[i] = np.ndarray.flatten(imresize(formatted_train_features[i], size))
+            formatted_train_features.append(np.ndarray.flatten(imresize(train_features[i], size)))
         for i in range(0, len(test_features)):
-            formatted_test_features[i] = np.ndarray.flatten(imresize(formatted_test_features[i], size))
+            formatted_test_features.append(np.ndarray.flatten(imresize(test_features[i], size)))
         #Run classifier with different numbers of neighbours
         for num_neighbours in (1,3,6):
             start = time.time()
