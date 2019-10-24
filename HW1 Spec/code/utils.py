@@ -116,29 +116,14 @@ def buildDict(train_images, dict_size, feature_type, clustering_type):
     # number of descriptors you store per image.
 
     #Initialize a SIFT Object, keypoints and descriptors lists
-    descriptors = []
-
-    if feature_type == 'sift':
-        sift = cv2.xfeatures2d.SIFT_create()
-        descriptors.append(sift.detectAndCompute(image, None)[0])
-        if clustering_type == 'kmeans':
-            kmeans = KMeans(n_clusters=dict_size, random_state=0).fit(descriptors)
-            return kmeans.cluster_centers_
-        else:
-            hierarchical = []
-
-    elif feature_type == 'surf':
-        if clustering_type == 'kmeans':
-            kmeans = KMeans(n_clusters=dict_size, random_state=0).fit(descriptors)
-            return kmeans.cluster_centers_
-        else:
-            hierarchical = []
-    else:
-        if clustering_type == 'kmeans':
-            kmeans = KMeans(n_clusters=dict_size, random_state=0).fit(descriptors)
-            return kmeans.cluster_centers_
-        else:
-            hierarchical =[]
+    keypoints = descriptors = []
+    sift = cv2.xfeatures2d.SIFT_create()
+    for image in train_images:
+        kp, des = sift.detectAndCompute(image, None)
+        keypoints += [kp]
+        descriptors += [des]
+    kmeans = KMeans(n_clusters=dict_size, random_state=0).fit(descriptors)
+    return kmeans.cluster_centers_
 
 
 
@@ -173,16 +158,18 @@ def tinyImages(train_features, test_features, train_labels, test_labels):
     # Accuracies are a percentage, runtimes are in seconds
     #For different sizes of images
     results = []
+    formatted_train_features = train_features
+    formatted_test_features = test_features
     for size in (8,16,32):
         #Resize images      
         for i in range(0, len(train_features)):
-            train_features[i] = np.ndarray.flatten(imresize(train_features[i], size))
+            formatted_train_features[i] = np.ndarray.flatten(imresize(formatted_train_features[i], size))
         for i in range(0, len(test_features)):
-            test_features[i] = np.ndarray.flatten(imresize(test_features[i], size))
+            formatted_test_features[i] = np.ndarray.flatten(imresize(formatted_test_features[i], size))
         #Run classifier with different numbers of neighbours
         for num_neighbours in (1,3,6):
             start = time.time()
-            accuracy = reportAccuracy(KNN_classifier(train_features, train_labels, test_features, num_neighbours),test_labels)
+            accuracy = reportAccuracy(KNN_classifier(formatted_train_features, train_labels, formatted_test_features, num_neighbours),test_labels)
             end = time.time()
             run_time = end - start
         results += [accuracy, run_time]

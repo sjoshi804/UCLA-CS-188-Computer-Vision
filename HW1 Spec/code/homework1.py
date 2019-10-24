@@ -29,7 +29,7 @@ if __name__ == "__main__":
     
     # Load data, the function is written for you in utils
     train_images, test_images, train_labels, test_labels = load_data()
-    
+    '''
     if args.tiny:
         # You have to write the tinyImages function
         tinyRes = tinyImages(train_images, test_images, train_labels, test_labels)
@@ -44,7 +44,7 @@ if __name__ == "__main__":
         # Save results
         np.save(SAVEPATH + 'tiny_acc.npy', acc)
         np.save(SAVEPATH + 'tiny_time.npy', runtime)
-
+'''
     # Create vocabularies, and save them in the result directory
     # You need to write the buildDict function
     vocabularies = []
