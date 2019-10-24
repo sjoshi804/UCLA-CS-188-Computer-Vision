@@ -119,9 +119,10 @@ def buildDict(train_images, dict_size, feature_type, clustering_type):
     descriptors = []
     sift = cv2.xfeatures2d.SIFT_create()
     for image in train_images:
-        des = sift.detectAndCompute(image, None)[0]
-        for x in des:
-            descriptors.append(x)
+        des = sift.detectAndCompute(image, None)[1]
+        print(len(des))
+        print((len(des[0])))
+        descriptors += des
     
     
     kmeans = KMeans(n_clusters=dict_size, random_state=0).fit(descriptors)
