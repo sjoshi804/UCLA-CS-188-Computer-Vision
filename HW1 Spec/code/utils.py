@@ -4,7 +4,8 @@ import numpy as np
 import timeit, time
 from sklearn import svm, cluster, preprocessing
 from sklearn.neighbors import KNeighborsClassifier
-from sklearn.cluster import KMeans
+from sklearn.cluster import KMeans, AgglomerativeClustering
+import copy
 
 
 def load_data():
@@ -115,19 +116,43 @@ def buildDict(train_images, dict_size, feature_type, clustering_type):
     #NOTE: Should you run out of memory or have performance issues, feel free to limit the 
     # number of descriptors you store per image.
 
-    #Initialize a SIFT Object, keypoints and descriptors lists
+    #Initialize empty list for descriptors
     descriptors = []
-    sift = cv2.xfeatures2d.SIFT_create()
-    for image in train_images:
-        des = sift.detectAndCompute(image, None)[1]
-        print(len(des))
-        print((len(des[0])))
-        for i in range(0, 10):
-            descriptors.append(des[i])
-      
-    kmeans = KMeans(n_clusters=dict_size, random_state=0).fit(descriptors)
-    return kmeans.cluster_centers_
 
+    #Construct appropriate model object based on chosen feature detector
+    if feature_type == "sift":
+        sift = cv2.xfeatures2d.SIFT_create()
+    elif feature_type == "surf":
+        surf = cv2.xfeatures2d.SURF_create()
+    else:
+        orb = cv2.ORB_create()
+
+    #Detect descriptors using chosen method
+    num = 0
+    for image in train_images:
+        if feature_type == "sift":
+            des = sift.detectAndCompute(image, None)[1]
+        elif feature_type == "surf":
+            des = surf.detectAndCompute(image, None)[1]
+        else:
+            des = orb.detectAndCompute(image, None)[1]
+
+        print(len(des)) #TODO: REMOVE DEBUGGING
+        print((len(des[0]))) #TODO: REMOVE DEBUGGING
+        #Flatten by appending elements of des directly to descriptors
+        for i in range(0, 10): #TODO: REMOVE DEBUGGING
+            descriptors.append(des[i])
+        num += 1
+        if num == 10:
+            break
+    
+    #Cluster according to chosen clustering method
+    if clustering_type == "kmeans":
+        kmeans = KMeans(n_clusters=dict_size, random_state=0).fit(descriptors)
+        return kmeans.cluster_centers_
+    else:
+        hierarchical = AgglomerativeClustering(n_clusters=dict_size).fit(descriptors)
+        return hierarchical.labels_
 
 
 
@@ -161,14 +186,14 @@ def tinyImages(train_features, test_features, train_labels, test_labels):
     # Accuracies are a percentage, runtimes are in seconds
     #For different sizes of images
     results = []
-    formatted_train_features = []
-    formatted_test_features = []
+    formatted_train_features = copy.deepcopy(train_features)
+    formatted_test_features = copy.deepcopy(test_features)
     for size in (8,16,32):
         #Resize images      
         for i in range(0, len(train_features)):
-            formatted_train_features.append(np.ndarray.flatten(imresize(train_features[i], size)))
+            formatted_train_features[i] = np.ndarray.flatten(imresize(formatted_train_features[i], size))
         for i in range(0, len(test_features)):
-            formatted_test_features.append(np.ndarray.flatten(imresize(test_features[i], size)))
+            formatted_test_features[i] = np.ndarray.flatten(imresize(formatted_test_features[i], size))
         #Run classifier with different numbers of neighbours
         for num_neighbours in (1,3,6):
             start = time.time()
