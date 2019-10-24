@@ -161,8 +161,8 @@ def tinyImages(train_features, test_features, train_labels, test_labels):
     # Accuracies are a percentage, runtimes are in seconds
     #For different sizes of images
     results = []
-    formatted_train_features = train_features
-    formatted_test_features = test_features
+    formatted_train_features = train_features.deepcopy()
+    formatted_test_features = test_features.deepcopy()
     for size in (8,16,32):
         #Resize images      
         for i in range(0, len(train_features)):
