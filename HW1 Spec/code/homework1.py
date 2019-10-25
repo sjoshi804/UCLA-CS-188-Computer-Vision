@@ -74,7 +74,7 @@ if __name__ == "__main__":
     # for vocabulary generation
     vocabularies = []
     for file_name in vocab_idx:
-        vocabularies.append(np.load(file_name + '.npy'))
+        vocabularies.append(np.load(SAVEPATH + file_name + '.npy'))
     print("Computing BOW")
     # You need to write ComputeBow()
     for i, vocab in enumerate(vocabularies):

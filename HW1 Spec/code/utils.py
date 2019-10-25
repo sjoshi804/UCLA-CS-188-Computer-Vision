@@ -144,7 +144,9 @@ def buildDict(train_images, dict_size, feature_type, clustering_type):
             des = orb.detectAndCompute(image, None)[1]
 
         #Flatten by appending elements of des directly to descriptors
-        for element in des: 
+        if des is None:
+            continue
+        for element in des:
             descriptors.append(element)
 
     
