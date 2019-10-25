@@ -29,7 +29,7 @@ if __name__ == "__main__":
 
     # Load data, the function is written for you in utils
     train_images, test_images, train_labels, test_labels = load_data()
-    '''
+
     if args.tiny:
         # You have to write the tinyImages function
         tinyRes = tinyImages(train_images, test_images, train_labels, test_labels)
@@ -111,18 +111,15 @@ if __name__ == "__main__":
     # Use BOW features to classify the images with 15 Linear SVM classifiers
     lin_accuracies = []
     lin_runtimes = []
-'''
-    print(train_labels)
-    predicted_labels = SVM_classifier(np.load(SAVEPATH + "bow_train_0.npy"), train_labels, np.load(SAVEPATH + "bow_test_0.npy"), True, 1)
-    print(reportAccuracy(test_labels, predicted_labels))
-    '''
+
     # Your code below
-    for i in range(0, len(train_representation)):
-        start_time = time.time()
-        predicted_labels = SVM_Classifer(train_representation[i], train_labels, test_representation[i], True, 1)
-        end_time = time.time()
-        lin_accuracies.append(reportAccuracy(test_labels, predicted_labels))
-        lin_runtimes.append(end_time - start_time)
+    for cost in [1, 0.1, 10]:
+        for i in range(0, len(train_representation)):
+            start_time = time.time()
+            predicted_labels = SVM_classifier(train_representation[i], train_labels, test_representation[i], True, cost)
+            end_time = time.time()
+            lin_accuracies.append(reportAccuracy(test_labels, predicted_labels))
+            lin_runtimes.append(end_time - start_time)
 
     np.save(SAVEPATH+'lin_accuracies.npy', np.asarray(lin_accuracies)) # Save the accuracies in the Results/ directory
     np.save(SAVEPATH+'lin_runtimes.npy', np.asarray(lin_runtimes)) # Save the runtimes in the Results/ directory
@@ -132,9 +129,15 @@ if __name__ == "__main__":
     rbf_runtimes = []
     
     # Your code below
-    # ...
+    for cost in [1, 0.1, 10]:
+        for i in range(0, len(train_representation)):
+            start_time = time.time()
+            predicted_labels = SVM_classifier(train_representation[i], train_labels, test_representation[i], False, cost)
+            end_time = time.time()
+            lin_accuracies.append(reportAccuracy(test_labels, predicted_labels))
+            lin_runtimes.append(end_time - start_time)
     
     np.save(SAVEPATH +'rbf_accuracies.npy', np.asarray(rbf_accuracies)) # Save the accuracies in the Results/ directory
     np.save(SAVEPATH +'rbf_runtimes.npy', np.asarray(rbf_runtimes)) # Save the runtimes in the Results/ directory
-            '''
+   
     
