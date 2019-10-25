@@ -4,6 +4,7 @@ import numpy as np
 import timeit, time
 from sklearn import svm, cluster, preprocessing
 from sklearn.neighbors import KNeighborsClassifier
+from sklearn.svm import SVC
 from sklearn.cluster import KMeans, AgglomerativeClustering
 import copy
 from scipy.spatial import distance
