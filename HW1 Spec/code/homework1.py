@@ -134,8 +134,8 @@ if __name__ == "__main__":
             start_time = time.time()
             predicted_labels = SVM_classifier(train_representation[i], train_labels, test_representation[i], False, cost)
             end_time = time.time()
-            lin_accuracies.append(reportAccuracy(test_labels, predicted_labels))
-            lin_runtimes.append(end_time - start_time)
+            rbf_accuracies.append(reportAccuracy(test_labels, predicted_labels))
+            rbf_runtimes.append(end_time - start_time)
     
     np.save(SAVEPATH +'rbf_accuracies.npy', np.asarray(rbf_accuracies)) # Save the accuracies in the Results/ directory
     np.save(SAVEPATH +'rbf_runtimes.npy', np.asarray(rbf_runtimes)) # Save the runtimes in the Results/ directory
