@@ -51,7 +51,7 @@ def KNN_classifier(train_features, train_labels, test_features, num_neighbors):
     predicted_categories = knn_classifier.predict(test_features)
     return predicted_categories
 
-#def SVM_classifier(train_features, train_labels, test_features, is_linear, svm_lambda):
+def SVM_classifier(train_features, train_labels, test_features, is_linear, svm_lambda):
     # this function will train a linear svm for every category (i.e. one vs all)
     # and then use the learned linear classifiers to predict the category of
     # every test image. every test feature will be evaluated with all 15 svms
@@ -59,19 +59,24 @@ def KNN_classifier(train_features, train_labels, test_features, num_neighbors):
     # margin, is w*x + b where '*' is the inner product or dot product and w and
     # b are the learned hyperplane parameters.
 
-    # train_features is an N x d matrix, where d is the dimensionality of
-    # the feature representation and N the number of training features.
-    # train_labels is an N x 1 array, where each entry is an integer 
+    # train_features is an n x d matrix, where d is the dimensionality of
+    # the feature representation.
+    # train_labels is an n x 1 array, where each entry is an integer 
     # indicating the ground truth category for each training image.
-    # test_features is an M x d matrix, where d is the dimensionality of the
-    # feature representation and M is the number of testing features.
+    # test_features is an m x d matrix, where d is the dimensionality of the
+    # feature representation. (you can assume m=n unless you modified the 
+    # starter code)
     # is_linear is a boolean. If true, you will train linear SVMs. Otherwise, you 
     # will use SVMs with a Radial Basis Function (RBF) Kernel.
-    # svm_lambda is a scalar, the value of the regularizer for the SVMs
-
-    # predicted_categories is an M x 1 array, where each entry is an integer
-    # indicating the predicted category for each test feature.
-    #return predicted_categories
+    # lambda is a scalar, the value of the regularizer for the SVMs
+    # predicted_categories is an m x 1 array, where each entry is an integer
+    # indicating the predicted category for each test image.
+    if is_linear:
+        svclassifer = SVC(C=svm_lambda, kernel="linear", class_weight={"balanced"})
+    else:
+        svclassifier = SVC(C=svm_lambda, kernel="rbf", class_weight={"balanced"})
+    svclassifer.fit(train_features, train_labels)
+    return svclassifer.predict(test_features)
 
 
 def imresize(input_image, target_size):

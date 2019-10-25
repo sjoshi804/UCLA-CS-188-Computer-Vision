@@ -26,7 +26,7 @@ if __name__ == "__main__":
         if not os.path.exists('Results'):
             os.mkdir('Results') 
         SAVEPATH = 'Results/'
-    
+
     # Load data, the function is written for you in utils
     train_images, test_images, train_labels, test_labels = load_data()
     '''
@@ -44,7 +44,7 @@ if __name__ == "__main__":
         # Save results
         np.save(SAVEPATH + 'tiny_acc.npy', acc)
         np.save(SAVEPATH + 'tiny_time.npy', runtime)
-'''
+
     # Create vocabularies, and save them in the result directory
     # You need to write the buildDict function
     vocabularies = []
@@ -65,8 +65,12 @@ if __name__ == "__main__":
     test_rep = [] # To store a set of BOW representations for the test images (given a vocabulary)
     train_rep = [] # To store a set of BOW representations for the train images (given a vocabulary)
     features = ['sift'] * 4 + ['surf'] * 4 + ['orb'] * 4 # Order in which features were used 
-    # for vocabulary generation
     
+    # for vocabulary generation
+    vocabularies = []
+    for file_name in vocab_idx:
+        vocabularies.append(np.load(file_name + '.npy'))
+
     # You need to write ComputeBow()
     for i, vocab in enumerate(vocabularies):
         for image in train_images: # Compute the BOW representation of the training set
@@ -87,13 +91,16 @@ if __name__ == "__main__":
     knn_accuracies = []
     knn_runtimes = []
 
+    train_representation = []
+    test_representation = []
     # Your code below, eg:
     for i, vocab in enumerate(vocabularies):
-        train_representation = np.load(SAVEPATH + 'bow_train_' + str(i) + '.npy')
-        test_representation =  np.load(SAVEPATH + 'bow_test_' + str(i) + '.npy')
+        #Load BOWs generated earlier
+        train_representation.append(np.load(SAVEPATH + 'bow_train_' + str(i) + '.npy'))
+        test_representation.append(np.load(SAVEPATH + 'bow_test_' + str(i) + '.npy'))
         for k in [1, 3, 6]:
             start_time = time.time()
-            predicted_labels = KNN_classifier(train_representation, train_labels,test_representation, k)
+            predicted_labels = KNN_classifier(train_representation[i], train_labels, test_representation[i], k)
             end_time = time.time()
             knn_accuracies.append(reportAccuracy(test_labels, predicted_labels))
             knn_runtimes.append(end_time - start_time)
@@ -104,9 +111,17 @@ if __name__ == "__main__":
     # Use BOW features to classify the images with 15 Linear SVM classifiers
     lin_accuracies = []
     lin_runtimes = []
-    
+'''
+    predicted_labels = SVM_classifier(np.load(SAVEPATH + "bow_train_0.npy"), train_labels, np.load(SAVEPATH + "bow_test_0.npy"), True, 1)
+    print(reportAccuracy(test_labels, predicted_labels))
+    '''
     # Your code below
-    #...
+    for i in range(0, len(train_representation)):
+        start_time = time.time()
+        predicted_labels = SVM_Classifer(train_representation[i], train_labels, test_representation[i], True, 1)
+        end_time = time.time()
+        lin_accuracies.append(reportAccuracy(test_labels, predicted_labels))
+        lin_runtimes.append(end_time - start_time)
 
     np.save(SAVEPATH+'lin_accuracies.npy', np.asarray(lin_accuracies)) # Save the accuracies in the Results/ directory
     np.save(SAVEPATH+'lin_runtimes.npy', np.asarray(lin_runtimes)) # Save the runtimes in the Results/ directory
@@ -120,5 +135,5 @@ if __name__ == "__main__":
     
     np.save(SAVEPATH +'rbf_accuracies.npy', np.asarray(rbf_accuracies)) # Save the accuracies in the Results/ directory
     np.save(SAVEPATH +'rbf_runtimes.npy', np.asarray(rbf_runtimes)) # Save the runtimes in the Results/ directory
-            
+            '''
     
