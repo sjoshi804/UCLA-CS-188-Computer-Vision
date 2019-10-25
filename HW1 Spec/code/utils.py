@@ -73,9 +73,9 @@ def SVM_classifier(train_features, train_labels, test_features, is_linear, svm_l
     # predicted_categories is an m x 1 array, where each entry is an integer
     # indicating the predicted category for each test image.
     if is_linear:
-        svclassifer = SVC(C=svm_lambda, kernel="linear", class_weight={"balanced"})
+        svclassifer = SVC(C=svm_lambda, kernel="linear", class_weight="balanced")
     else:
-        svclassifier = SVC(C=svm_lambda, kernel="rbf", class_weight={"balanced"})
+        svclassifier = SVC(C=svm_lambda, kernel="rbf", class_weight="balanced")
     svclassifer.fit(train_features, train_labels)
     return svclassifer.predict(test_features)
 

@@ -112,6 +112,7 @@ if __name__ == "__main__":
     lin_accuracies = []
     lin_runtimes = []
 '''
+    print(train_labels)
     predicted_labels = SVM_classifier(np.load(SAVEPATH + "bow_train_0.npy"), train_labels, np.load(SAVEPATH + "bow_test_0.npy"), True, 1)
     print(reportAccuracy(test_labels, predicted_labels))
     '''
