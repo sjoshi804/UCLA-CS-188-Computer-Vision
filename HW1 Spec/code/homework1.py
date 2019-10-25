@@ -64,6 +64,7 @@ if __name__ == "__main__":
                 np.save(SAVEPATH + filename, np.asarray(vocabulary))
                 vocabularies.append(vocabulary) # A list of vocabularies (which are 2D arrays)
                 vocab_idx.append(filename.split('.')[0]) # Save the map from index to vocabulary
+                print(feature + " " + algo + " " + str(dict_size) + " done")
     print("Constructed Vocabularies")            
     # Compute the Bow representation for the training and testing sets
     test_rep = [] # To store a set of BOW representations for the test images (given a vocabulary)
@@ -86,7 +87,8 @@ if __name__ == "__main__":
             rep = computeBow(image, vocab, features[i])
             test_rep.append(rep)
         np.save(SAVEPATH + 'bow_test_' + str(i) + '.npy', np.asarray(test_rep)) # Save the representations for vocabulary i
-        train_rep = [] # reset the list to save the following vocabulary
+        print(feature + " " + algo + " " + str(dict_size) + " done")
+        test_rep = [] # reset the list to save the following vocabulary
     print("Computed BOW.")
     
     # Use BOW features to classify the images with a KNN classifier
