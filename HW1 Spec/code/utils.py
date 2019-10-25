@@ -154,9 +154,30 @@ def buildDict(train_images, dict_size, feature_type, clustering_type):
         return kmeans.cluster_centers_
     else:
         hierarchical = AgglomerativeClustering(n_clusters=dict_size).fit(descriptors)
-        return hierarchical.labels_
 
+        #Get descriptors matching to each label
+        des_mapping = []
+        for label in range(0, dict_size):
+            des_mapping.append([])
+            for i in range(0, len(descriptors)):
+                if hierarchical.labels_[i] == label:
+                    des_mapping[label].append(descriptors[i])
 
+        #Construct the 'average' descriptor for each label
+        cluster_centers = []
+        for label in range(0, dict_size):
+            avg_descriptor = []
+            for j in range(0, len(descriptors[0])):
+                avg_value = 0
+                for descriptor in des_mapping[label]:
+                    avg_value += descriptor[j]
+                avg_value /= len(des_mapping[label])
+                avg_descriptor.append(avg_value)
+            cluster_centers.append(avg_descriptor)
+
+        #return clusters
+        return cluster_centers
+            
 
 def computeBow(image, vocabulary, feature_type):
     # extracts features from the image, and returns a BOW representation using a vocabulary
@@ -177,15 +198,15 @@ def computeBow(image, vocabulary, feature_type):
         descriptors = orb.detectAndCompute(image, None)[1]
 
     # BOW is the new image representation, a normalized histogram
-    Bow = [0] * len(vocabulary)
-    for d in descriptors:
-        dists = [np.Inf] * len(vocabulary)
-        for i in range(0,len(vocabulary)):
-            dists[i] = [ distance.cdist(d, vocabulary[i]) ]
-        Bow[np.argmin(np.asarray(dists))] += 1
+    bow = [0] * len(vocabulary)
+    dists = distance.cdist(descriptors, vocabulary)
+    for dist_of_des in dists:
+        bow[np.argmin(np.asarray(dist_of_des))] += 1
     
-    #return Bow
-    return Bow
+    #Normalize histogram
+    bow = preprocessing.normalize([bow])
+
+    return bow[0]
 
 
 def tinyImages(train_features, test_features, train_labels, test_labels):
@@ -221,6 +242,6 @@ def tinyImages(train_features, test_features, train_labels, test_labels):
             accuracy = reportAccuracy(KNN_classifier(formatted_train_features, train_labels, formatted_test_features, num_neighbours),test_labels)
             end = time.time()
             run_time = end - start
-        results += [accuracy, run_time]
+            results += [accuracy, run_time]
     return results
     

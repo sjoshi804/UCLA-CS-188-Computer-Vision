@@ -29,7 +29,7 @@ if __name__ == "__main__":
     
     # Load data, the function is written for you in utils
     train_images, test_images, train_labels, test_labels = load_data()
-    
+    '''
     if args.tiny:
         # You have to write the tinyImages function
         tinyRes = tinyImages(train_images, test_images, train_labels, test_labels)
@@ -44,7 +44,7 @@ if __name__ == "__main__":
         # Save results
         np.save(SAVEPATH + 'tiny_acc.npy', acc)
         np.save(SAVEPATH + 'tiny_time.npy', runtime)
-
+'''
     # Create vocabularies, and save them in the result directory
     # You need to write the buildDict function
     vocabularies = []
@@ -52,9 +52,9 @@ if __name__ == "__main__":
     # e.g vocab_idx[i] will tell you which algorithms/neighbors were used to compute vocabulary i
     # This isn't used in the rest of the code so you can feel free to ignore it
 
-    for feature in ['sift', 'surf', 'orb']:
-        for algo in ['kmeans', 'hierarchical']:
-            for dict_size in [20, 50]:
+    for feature in ['sift']:#['sift', 'surf', 'orb']:
+        for algo in ['hierarchical']:#['kmeans', 'hierarchical']:
+            for dict_size in [20]:#[20, 50]:
                 vocabulary = buildDict(train_images, dict_size, feature, algo)
                 filename = 'voc_' + feature + '_' + algo + '_' + str(dict_size) + '.npy'
                 np.save(SAVEPATH + filename, np.asarray(vocabulary))
@@ -74,6 +74,7 @@ if __name__ == "__main__":
             train_rep.append(rep)
         np.save(SAVEPATH + 'bow_train_' + str(i) + '.npy', np.asarray(train_rep)) # Save the representations for vocabulary i
         train_rep = [] # reset the list to save the following vocabulary
+        print(len(test_images))
         for image in test_images: # Compute the BOW representation of the testing set
             rep = computeBow(image, vocab, features[i])
             test_rep.append(rep)
@@ -88,10 +89,15 @@ if __name__ == "__main__":
 
     # Your code below, eg:
     for i, vocab in enumerate(vocabularies):
+        train_representation = np.load(SAVEPATH + 'bow_train_' + str(i) + '.npy')
+        test_representation =  np.load(SAVEPATH + 'bow_test_' + str(i) + '.npy')
         for k in [1, 3, 6]:
-            KNN_classifier(train_rep, train_labels, test_rep, k)
-
-    
+            start_time = time.time()
+            predicted_labels = KNN_classifier(train_representation, train_labels,test_representation, k)
+            end_time = time.time()
+            knn_accuracies.append(reportAccuracy(test_labels, predicted_labels))
+            knn_runtimes.append(end_time - start_time)
+  
     np.save(SAVEPATH+'knn_accuracies.npy', np.asarray(knn_accuracies)) # Save the accuracies in the Results/ directory
     np.save(SAVEPATH+'knn_runtimes.npy', np.asarray(knn_runtimes)) # Save the runtimes in the Results/ directory
     
