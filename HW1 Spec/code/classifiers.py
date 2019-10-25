@@ -1,5 +1,6 @@
 from utils import *
 from sklearn.neighbors import KNeighborsClassifier
+from sklearn.svm import SVC
 
 
 def KNN_classifier(train_features, train_labels, test_features, num_neighbors):
@@ -19,7 +20,7 @@ def KNN_classifier(train_features, train_labels, test_features, num_neighbors):
     return predicted_categories
 
 
-# def SVM_classifier(train_features, train_labels, test_features, is_linear, lambda):
+def SVM_classifier(train_features, train_labels, test_features, is_linear, svm_lambda):
 #     # this function will train a linear svm for every category (i.e. one vs all)
 #     # and then use the learned linear classifiers to predict the category of
 #     # every test image. every test feature will be evaluated with all 15 svms
@@ -39,4 +40,9 @@ def KNN_classifier(train_features, train_labels, test_features, num_neighbors):
 #     # lambda is a scalar, the value of the regularizer for the SVMs
 #     # predicted_categories is an m x 1 array, where each entry is an integer
 #     # indicating the predicted category for each test image.
-#     return predicted_categories
+    if is_linear:
+        svclassifer = SVC(C=svm_lambda, kernel="linear", class_weight={"balanced"})
+    else:
+        svclassifier = SVC(C=svm_lambda, kernel="rbf", class_weight={"balanced"})
+    svclassifer.fit(train_features, train_labels)
+    return svclassifer.predict(test_features)
