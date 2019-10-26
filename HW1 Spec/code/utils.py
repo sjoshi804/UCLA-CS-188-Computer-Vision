@@ -7,7 +7,6 @@ from sklearn.neighbors import KNeighborsClassifier
 from sklearn.svm import SVC
 from sklearn.cluster import KMeans, AgglomerativeClustering
 import copy
-import pdb
 from scipy.spatial import distance
 
 
@@ -156,7 +155,6 @@ def buildDict(train_images, dict_size, feature_type, clustering_type):
         kmeans = KMeans(n_clusters=dict_size, random_state=0).fit(descriptors)
         return kmeans.cluster_centers_
     else:
-        pdb.set_trace()
         hierarchical = AgglomerativeClustering(n_clusters=dict_size).fit(descriptors)
 
         #Get descriptors matching to each label
@@ -236,21 +234,20 @@ def tinyImages(train_features, test_features, train_labels, test_labels):
     results = []
     formatted_train_features = copy.deepcopy(train_features)
     formatted_test_features = copy.deepcopy(test_features)
-    #TODO: Time the resizing?
     for size in (8,16,32):
         #Resize images 
-        start1 = time.time()     
+        resize_start_time = time.time()     
         for i in range(0, len(train_features)):
             formatted_train_features[i] = np.ndarray.flatten(imresize(formatted_train_features[i], size))
         for i in range(0, len(test_features)):
             formatted_test_features[i] = np.ndarray.flatten(imresize(formatted_test_features[i], size))
-        end1 = time.time()
+        resize_end_time = time.time()
         #Run classifier with different numbers of neighbours
         for num_neighbours in (1,3,6):
             start = time.time()
             accuracy = reportAccuracy(KNN_classifier(formatted_train_features, train_labels, formatted_test_features, num_neighbours),test_labels)
             end = time.time()
-            run_time = end - start + end1 - start1
+            run_time = end - start + resize_end_time - resize_start_time
             results += [accuracy, run_time]
     return results
     
