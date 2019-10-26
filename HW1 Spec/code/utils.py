@@ -13,7 +13,6 @@ from scipy.spatial import distance
 def load_data():
     test_path = '../data/test/'
     train_path = '../data/train/'
-    
     train_classes = sorted([dirname for dirname in os.listdir(train_path)], key=lambda s: s.upper())
     test_classes = sorted([dirname for dirname in os.listdir(test_path)], key=lambda s: s.upper())
     train_labels = []
