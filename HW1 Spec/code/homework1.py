@@ -54,7 +54,7 @@ if __name__ == "__main__":
     vocabularies = []
     vocab_idx = [] # If you have doubts on which index is mapped to which vocabulary, this is referenced here
     # e.g vocab_idx[i] will tell you which algorithms/neighbors were used to compute vocabulary i
-    # This isn't used in the rest of the code so you can feel free to ignore it
+    #This isn't used in the rest of the code so you can feel free to ignore it
     print("Constructing vocabularies")
     for feature in ['sift', 'surf', 'orb']:
         for algo in ['kmeans', 'hierarchical']:
@@ -87,7 +87,7 @@ if __name__ == "__main__":
             rep = computeBow(image, vocab, features[i])
             test_rep.append(rep)
         np.save(SAVEPATH + 'bow_test_' + str(i) + '.npy', np.asarray(test_rep)) # Save the representations for vocabulary i
-        print(feature + " " + algo + " " + str(dict_size) + " done")
+        print(vocab_idx[i] + " done")
         test_rep = [] # reset the list to save the following vocabulary
     print("Computed BOW.")
     
@@ -118,7 +118,7 @@ if __name__ == "__main__":
     lin_runtimes = []
     print("Linear SVM Running")
     # Your code below
-    for cost in [1, 0.1, 10]:
+    for cost in [1]:
         for i in range(0, len(train_representation)):
             start_time = time.time()
             predicted_labels = SVM_classifier(train_representation[i], train_labels, test_representation[i], True, cost)
@@ -134,13 +134,14 @@ if __name__ == "__main__":
     rbf_runtimes = []
     print("RBF SVM Starting")
     # Your code below
-    for cost in [1, 0.1, 10]:
+    for cost in [1]:
         for i in range(0, len(train_representation)):
             start_time = time.time()
             predicted_labels = SVM_classifier(train_representation[i], train_labels, test_representation[i], False, cost)
             end_time = time.time()
             rbf_accuracies.append(reportAccuracy(test_labels, predicted_labels))
             rbf_runtimes.append(end_time - start_time)
+            print(rbf_accuracies)
     
     np.save(SAVEPATH +'rbf_accuracies.npy', np.asarray(rbf_accuracies)) # Save the accuracies in the Results/ directory
     np.save(SAVEPATH +'rbf_runtimes.npy', np.asarray(rbf_runtimes)) # Save the runtimes in the Results/ directory

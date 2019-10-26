@@ -7,6 +7,7 @@ from sklearn.neighbors import KNeighborsClassifier
 from sklearn.svm import SVC
 from sklearn.cluster import KMeans, AgglomerativeClustering
 import copy
+import pdb
 from scipy.spatial import distance
 
 
@@ -73,11 +74,11 @@ def SVM_classifier(train_features, train_labels, test_features, is_linear, svm_l
     # predicted_categories is an m x 1 array, where each entry is an integer
     # indicating the predicted category for each test image.
     if is_linear:
-        svclassifer = SVC(C=svm_lambda, kernel="linear", class_weight="balanced")
+        svclassifier = SVC(C=svm_lambda, kernel="linear", class_weight="balanced")
     else:
         svclassifier = SVC(C=svm_lambda, kernel="rbf", class_weight="balanced")
-    svclassifer.fit(train_features, train_labels)
-    return svclassifer.predict(test_features)
+    svclassifier.fit(train_features, train_labels)
+    return svclassifier.predict(test_features)
 
 
 def imresize(input_image, target_size):
@@ -130,7 +131,7 @@ def buildDict(train_images, dict_size, feature_type, clustering_type):
     if feature_type == "sift":
         sift = cv2.xfeatures2d.SIFT_create(nfeatures=10)
     elif feature_type == "surf":
-        surf = cv2.xfeatures2d.SURF_create(hessianThreshold=1000)
+        surf = cv2.xfeatures2d.SURF_create(hessianThreshold=10000)
     else:
         orb = cv2.ORB_create(nfeatures=10)
 
@@ -155,6 +156,7 @@ def buildDict(train_images, dict_size, feature_type, clustering_type):
         kmeans = KMeans(n_clusters=dict_size, random_state=0).fit(descriptors)
         return kmeans.cluster_centers_
     else:
+        pdb.set_trace()
         hierarchical = AgglomerativeClustering(n_clusters=dict_size).fit(descriptors)
 
         #Get descriptors matching to each label
@@ -193,7 +195,7 @@ def computeBow(image, vocabulary, feature_type):
         sift = cv2.xfeatures2d.SIFT_create(nfeatures=10)
         descriptors = sift.detectAndCompute(image, None)[1]
     elif feature_type == "surf":
-        surf = cv2.xfeatures2d.SURF_create(hessianThreshold=1000)
+        surf = cv2.xfeatures2d.SURF_create(hessianThreshold=10000)
         descriptors = surf.detectAndCompute(image, None)[1]
     else:
         orb = cv2.ORB_create(nfeatures=10)
@@ -201,6 +203,9 @@ def computeBow(image, vocabulary, feature_type):
 
     # BOW is the new image representation, a normalized histogram
     bow = [0] * len(vocabulary)
+    if descriptors is None:
+        return bow
+
     dists = distance.cdist(descriptors, vocabulary)
     for dist_of_des in dists:
         bow[np.argmin(np.asarray(dist_of_des))] += 1
@@ -233,17 +238,19 @@ def tinyImages(train_features, test_features, train_labels, test_labels):
     formatted_test_features = copy.deepcopy(test_features)
     #TODO: Time the resizing?
     for size in (8,16,32):
-        #Resize images      
+        #Resize images 
+        start1 = time.time()     
         for i in range(0, len(train_features)):
             formatted_train_features[i] = np.ndarray.flatten(imresize(formatted_train_features[i], size))
         for i in range(0, len(test_features)):
             formatted_test_features[i] = np.ndarray.flatten(imresize(formatted_test_features[i], size))
+        end1 = time.time()
         #Run classifier with different numbers of neighbours
         for num_neighbours in (1,3,6):
             start = time.time()
             accuracy = reportAccuracy(KNN_classifier(formatted_train_features, train_labels, formatted_test_features, num_neighbours),test_labels)
             end = time.time()
-            run_time = end - start
+            run_time = end - start + end1 - start1
             results += [accuracy, run_time]
     return results
     
