@@ -127,11 +127,11 @@ def buildDict(train_images, dict_size, feature_type, clustering_type):
 
     #Construct appropriate model object based on chosen feature detector
     if feature_type == "sift":
-        sift = cv2.xfeatures2d.SIFT_create(nfeatures=10)
+        sift = cv2.xfeatures2d.SIFT_create()
     elif feature_type == "surf":
-        surf = cv2.xfeatures2d.SURF_create(hessianThreshold=10000)
+        surf = cv2.xfeatures2d.SURF_create()
     else:
-        orb = cv2.ORB_create(nfeatures=10)
+        orb = cv2.ORB_create()
 
     #Detect descriptors using chosen method
     for image in train_images:
@@ -189,13 +189,13 @@ def computeBow(image, vocabulary, feature_type):
     # used to create the vocabulary
     #Construct appropriate model object based on chosen feature detector
     if feature_type == "sift":
-        sift = cv2.xfeatures2d.SIFT_create(nfeatures=10)
+        sift = cv2.xfeatures2d.SIFT_create()
         descriptors = sift.detectAndCompute(image, None)[1]
     elif feature_type == "surf":
-        surf = cv2.xfeatures2d.SURF_create(hessianThreshold=10000)
+        surf = cv2.xfeatures2d.SURF_create()
         descriptors = surf.detectAndCompute(image, None)[1]
     else:
-        orb = cv2.ORB_create(nfeatures=10)
+        orb = cv2.ORB_create()
         descriptors = orb.detectAndCompute(image, None)[1]
 
     # BOW is the new image representation, a normalized histogram
