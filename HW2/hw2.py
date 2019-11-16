@@ -85,18 +85,31 @@ print("Plotting max i and max j across all results")
 print("Creating final blurred image")
 final_image = np.zeros(color_frames[0].shape)
 for i in range(0, len(frames)):
+    print("Adding frame " + str(i))
+
+    #Create translation matrix
     translation_matrix = np.zeros((2, 3))
     translation_matrix[0][1] = 1.0
     translation_matrix[1][0] = 1.0
     translation_matrix[0][2] = -(max_i_cood[i] - max_i_cood[0])
     translation_matrix[1][2] = -(max_j_cood[i] - max_j_cood[0])
+
+    #Ensure shape for shifted image
     shifted_image = np.zeros(color_frames[i].shape)
     size = shifted_image.shape
     num_rows = size[0]
     num_cols = size[1]
+
+    #Warp Affine to translate
     shifted_image = cv2.warpAffine(
         src=color_frames[i], dsize=(num_rows, num_cols), M=translation_matrix)
+
+    #Sum up to final image
     final_image += np.divide(np.transpose(shifted_image,(1, 0, 2)), len(frames))
+
+#Write image to file
+print("Writing result image to result.jpg")
+cv2.imwrite("result.jpg", final_image)
 
 #Project cleanup    
 cap.release()
