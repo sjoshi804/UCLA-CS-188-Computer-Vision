@@ -3,11 +3,13 @@ import cv2
 from skimage import data
 from skimage.feature import match_template
 import matplotlib.pyplot as plot
+from copy import deepcopy
 
 #Initializing variables for video
 cap = cv2.VideoCapture('video.mp4')
 count = 0
 frames = []
+color_frames = []
 
 #Loop through video to break into  frames
 while (cap.isOpened()):
@@ -31,8 +33,11 @@ while (cap.isOpened()):
     cv2.imwrite(name, frames[count - 1])
     '''
 
+    #Store a color copy of the image
+    color_frames.append(deepcopy(frame))
     #Make image grayscale
     frames[count - 1] = cv2.cvtColor(frames[count - 1], cv2.COLOR_BGR2GRAY)
+
 
 #Draw rectangle on first frame
 template_image = cv2.rectangle(frames[0], (1275, 595), (1370, 710), (0, 255, 0), 2)
@@ -78,14 +83,20 @@ print("Plotting max i and max j across all results")
 #plot.show()
 
 print("Creating final blurred image")
-final_image = frames[0]
-for i in range(1, len(frames)):
-    print("Processing frame " + str(i + 1))
-    for x in range(1, len(frames[i])):
-        for y in range(1, len(frames[i][x])):
-            final_image[x][y] += np.divide(frames[i][x - max_i_cood[i]][y - max_j_cood[i]], len(frames))
-print("Blurred image printed to result.jpg")
-cv2.imwrite("result.jpg", final_image)
+final_image = np.zeros(color_frames[0].shape)
+for i in range(0, len(frames)):
+    translation_matrix = np.zeros((2, 3))
+    translation_matrix[0][1] = 1.0
+    translation_matrix[1][0] = 1.0
+    translation_matrix[0][2] = -(max_i_cood[i] - max_i_cood[0])
+    translation_matrix[1][2] = -(max_j_cood[i] - max_j_cood[0])
+    shifted_image = np.zeros(color_frames[i].shape)
+    size = shifted_image.shape
+    num_rows = size[0]
+    num_cols = size[1]
+    shifted_image = cv2.warpAffine(
+        src=color_frames[i], dsize=(num_rows, num_cols), M=translation_matrix)
+    final_image += np.divide(np.transpose(shifted_image,(1, 0, 2)), len(frames))
 
 #Project cleanup    
 cap.release()
