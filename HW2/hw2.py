@@ -69,20 +69,22 @@ for source in frames:
 
 #Plot intensities for one 'result' of the above template matching
 print("Displaying grayscale plot of one 'result'")
-plot.imshow(result, cmap="gray")
-plot.show()
+#plot.imshow(result, cmap="gray")
+#plot.show()
 
 #Plot maximum intensity point's movement graph
 print("Plotting max i and max j across all results")
-plot.scatter(max_i_cood, max_j_cood)
-plot.show()
+#plot.scatter(max_i_cood, max_j_cood)
+#plot.show()
 
-final_image = frame[0]
+print("Creating final blurred image")
+final_image = frames[0]
 for i in range(1, len(frames)):
+    print("Processing frame " + str(i + 1))
     for x in range(1, len(frames[i])):
         for y in range(1, len(frames[i][x])):
-            final_image[x][y] += frames[i][x - max_i_cood[i]][y - max_j_cood[i]]
-
+            final_image[x][y] += np.divide(frames[i][x - max_i_cood[i]][y - max_j_cood[i]], len(frames))
+print("Blurred image printed to result.jpg")
 cv2.imwrite("result.jpg", final_image)
 
 #Project cleanup    
